@@ -15,7 +15,8 @@
     },
     "dev": {
       "cache": false,
-      "persistent": true
+      "persistent": true,
+      "env": ["EMBED_DIM", "LANCEDB_URI", "LANCEDB_API_KEY", "OPENAI_API_KEY"]
     }
   }
 }
