@@ -5,6 +5,7 @@ import { insertEmbedding } from "@/app/lib/vectorize";
 import { success } from "better-auth";
 import { error } from "console";
 import { NextRequest, NextResponse } from "next/server";
+import { title } from "process";
 
 const prisma = new PrismaClient();
 export const runtime = 'nodejs'
@@ -15,9 +16,12 @@ export async function POST(req:NextRequest) {
         if(!session?.user) {
             return NextResponse.json({error: "Unauthorised"}, {status : 401});
         }
-        const { content } = await req.json();
+        const { title, content } = await req.json();
         if(!content?.trim()){
             return NextResponse.json({error: 'Content is required'}, {status: 400})
+        }
+        if(!title?.trim()){
+            return NextResponse.json({error: 'Title is required'}, {status: 400})
         }
 
         //create journal entry in Postgre sQL
@@ -25,6 +29,7 @@ export async function POST(req:NextRequest) {
         const entry = await prisma.journalEntry.create({
             data: {
                 userId: session.user.id,
+                title: title.trim(),
                 content: content.trim(),
             }
         });
@@ -37,6 +42,7 @@ export async function POST(req:NextRequest) {
                 embedding,
                 {
                     userId: session.user.id,
+                    title: title.trim(),
                     content: content.trim(),
                     createdAt: entry.createdAt.toISOString(),
                 },
@@ -80,6 +86,7 @@ export async function GET(req:NextRequest) {
             orderBy: {createdAt: 'desc'},
             select: {
                 id: true,
+                title: true,
                 content: true,
                 createdAt: true,
                 updatedAt: true

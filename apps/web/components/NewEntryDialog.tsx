@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { ArrowLeft, ChevronUp, ChevronDown, Undo, Redo, Link, Sparkles, Image, Mic } from 'lucide-react';
 import { Button } from './ui/button';
+import SmoothButton from './SmoothButton';
 
 interface NewEntryDialogProps {
   isOpen: boolean;
@@ -13,6 +14,7 @@ interface NewEntryDialogProps {
 }
 export interface CreatedEntry {
     id: string;
+    title: string;
     content: string;
     createdAt: string;
 }
@@ -21,6 +23,7 @@ export function NewEntryDialog({ isOpen, onClose, mode,
     initialEntry,
     onCreate,
     onUpdate }: NewEntryDialogProps) {
+  const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [imageUrl, setImageUrl] = useState('');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -28,6 +31,7 @@ export function NewEntryDialog({ isOpen, onClose, mode,
 
   useEffect(() => {
     if (!isOpen) return;
+    setTitle(initialEntry?.title ?? "");
     setContent(initialEntry?.content ?? "");
     setErrorMessage(null);
   }, [isOpen, initialEntry]);
@@ -35,7 +39,7 @@ export function NewEntryDialog({ isOpen, onClose, mode,
   if (!isOpen) return null;
 
   const handleSave = async () => {
-    if (!content.trim() || isSaving) return;
+    if (!content.trim() || !title.trim() || isSaving) return;
 
     setIsSaving(true);
     setErrorMessage(null);
@@ -50,7 +54,7 @@ export function NewEntryDialog({ isOpen, onClose, mode,
       const res = await fetch(endpoint, {
         method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content: content.trim() }),
+        body: JSON.stringify({ title: title.trim(), content: content.trim() }),
       });
 
       const data = await res.json().catch(() => null);
@@ -63,7 +67,7 @@ export function NewEntryDialog({ isOpen, onClose, mode,
       } else {
         onCreate?.(data.entry as CreatedEntry);
       }
-
+      setTitle("");
       setContent("");
       onClose();
     } catch (error) {
@@ -78,39 +82,7 @@ export function NewEntryDialog({ isOpen, onClose, mode,
 
   if (!isOpen) return null;
 
-//   const handleSave = async() => {
-//     if(!content.trim() || isSaving)     return;
 
-//     setIsSaving(true);
-//     setErrorMessage(null);
-
-//     try{
-//         const response = await fetch("/api/journal", {
-//             method: "POST",
-//             headers: {"Content-Type": "application/json"},
-//             body: JSON.stringify({content: content.trim()}),
-//         });
-
-//         const data = await response.json().catch(() => null);
-
-//         if (!response.ok || !data?.entry) {
-//             throw new Error(data?.error ?? "Failed to save entry");
-//           }
-    
-//           onSave?.(data.entry as CreatedEntry);
-//           setContent("");
-//           setImageUrl("");
-//           onClose();
-//     } catch (error) {
-//           console.error("Failed to save journal entry", error);
-//           setErrorMessage(
-//             error instanceof Error ? error.message : "Failed to save entry"
-//           );
-//         } finally {
-//           setIsSaving(false);
-//         }
-    
-//   };
 
   const getCurrentDate = () => {
     const today = new Date();
@@ -163,6 +135,14 @@ export function NewEntryDialog({ isOpen, onClose, mode,
         </div>
 
        
+        {/*Title Area  */}
+        <input
+          type="text"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          placeholder="Title"
+          className="w-full bg-transparent border-none text-gray-900 placeholder:text-gray-400 focus:outline-none mb-8 font-mono text-lg"
+        />
 
         {/* Content Area */}
         <div className="flex-1 mb-8">
@@ -176,8 +156,12 @@ export function NewEntryDialog({ isOpen, onClose, mode,
 
         {/* Bottom Actions */}
         <div className="flex items-center justify-between">
+          {/* <div>
+            <Button variant={'outline'} className="px-6 py-2 bg-[#e9e9f6] text-black rounded-md active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed" onClick={handleSave}> Save Entry</Button>
+          </div> */}
+
           <div>
-            <Button onClick={handleSave}> Save Entry</Button>
+           <SmoothButton onClick={handleSave}/>
           </div>
           
           <div className="flex items-center gap-4">

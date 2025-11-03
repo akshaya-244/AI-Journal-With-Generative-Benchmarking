@@ -26,6 +26,7 @@ export async function getEmbeddingsTable() {
         const schema = new Schema([
             new Field("id", new Utf8(), false),
             new Field("userId", new Utf8()),
+            new Field("title", new Utf8()),
             new Field("content", new Utf8()),
             new Field("createdAt", new Utf8()),
             new Field("vector", new FixedSizeList(dim, new Field("item", new Float64()))),

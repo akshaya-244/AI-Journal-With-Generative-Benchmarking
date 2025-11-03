@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Mail } from "lucide-react";
 export default function AuthButtons() {
   return (
     <div className="flex items-center flex-col min-h-screen justify-center">
@@ -65,6 +66,7 @@ export default function AuthButtons() {
         <Button onClick={async () => {await authClient.signIn.social({
          provider: "google"
        })}} variant="outline" className="w-full">
+        <Mail className="w-4 h-4 mr-2" />
           Login with Google
         </Button>
       </CardFooter>

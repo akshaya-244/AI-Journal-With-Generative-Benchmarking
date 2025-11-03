@@ -47,6 +47,7 @@ export async function  POST(req:NextRequest) {
 
         const formattedResults = results.map((result: any) =>({
             id: result.id,
+            title: result.title,
             content: result.content,
             createdAt: result.createdAt,
             score: result._distance

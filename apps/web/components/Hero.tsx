@@ -19,7 +19,7 @@ export default function Hero() {
                         <p className="text-sm md:text-lg  lg:text-xl leading-tight text-[hsl(223,17%,51%)] max-w-2xl mx-auto lg:mx-0 px-4">
                             Write freely and let AI organize your notes, surface patterns, and answer questions.
                         </p>
-                        <Button onClick={() => router.push('/sign-in')} variant="outline" size="xl" className="p-4 shadow-lg shadow-indigo-600/40">
+                        <Button onClick={() => router.push('/sign-in')} variant="outline" size="xl" className="p-4 shadow-lg shadow-indigo-600/40 active:scale-95 transition-transform">
                             Get Started
                         </Button>
                     </div>

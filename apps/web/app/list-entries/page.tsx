@@ -6,6 +6,10 @@ import { Header } from '@/components/Header';
 import { EntryCard } from '@/components/EntryCard';
 import { CreatedEntry, NewEntryDialog } from '@/components/NewEntryDialog';
 import { methods } from 'better-auth/react';
+import { useRouter } from 'next/navigation';
+import { EntryList } from '@/components/EntryList';
+import { TooltipProvider } from '@/components/ui/tooltip';
+import { Spinner } from '@/components/Spinner';
 
 
 interface Entry {
@@ -17,11 +21,33 @@ interface Entry {
 }
 
 export default function ListEntries() {
+ const router = useRouter();
+  const [isAuth, setIsAuth] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isDialogDeleteOpen, setIsDialogDeleteOpen] = useState(false);
   const [dialogMode, setDialogMode] = useState<"create" | "edit">("create");
   const [entries, setEntries] = useState<Entry[]>([]);
   const [selectedEntry, setSelectedEntry] = useState<Entry | null>(null);
+  const [loader, setLoader] =useState(false)
+    // Check authentication on mount
+    useEffect(() => {
+        const checkAuth = async () => {
+          try {
+            const res = await fetch("/api/journal", { method: "GET" });
+            if (!res.ok) {
+              router.push("/");
+            } else {
+              setIsAuth(true);
+            }
+          } catch {
+            router.push("/");
+          }
+        };
+        checkAuth();
+      }, [router]);
+
+    
+
 
   const openCreateDialog = () => {
     setDialogMode("create");
@@ -49,15 +75,14 @@ export default function ListEntries() {
   const normalizeEntry = (entry: CreatedEntry): Entry => ({
     id: entry.id,
     content: entry.content,
-    title: "Untitled",
+    title: entry.title,
     date: new Date(entry.createdAt).toLocaleDateString("en-US", {
       month: "long",
       day: "numeric",
       year: "numeric",
     }),
-    isEmpty: !entry.content.trim(),
+    isEmpty: !entry.content.trim() 
   });
-
 
   const handleDelete = async (id: string) => {
     try {
@@ -76,15 +101,19 @@ export default function ListEntries() {
       throw error;
     }
   };
+
+
+
  
   useEffect(() => 
     {
         //used to prevent memory leak 
+        setLoader(true);
         let isMounted=true;
         const loadEntries = async () => {
         try{
            const res =  await fetch("/api/journal",{ method: "GET"});
-           if(!res.ok) throw new Error("Failed to load entries")
+           
             
             //renames entruies variable to apiEntries to avoid conflict
             const {entries: apiEntries} = await res.json();
@@ -98,19 +127,25 @@ export default function ListEntries() {
             console.error("Journal fetch failed", error);
             // optionally surface an error state here
         }
-    };
-
-        loadEntries();
+      };
+        const execute = async () => {
+          await loadEntries();
+          setLoader(false);
+        }
+        execute()
+        
         return () => {
             isMounted = false;
   };
     
-  }, [])
+  }, [isAuth])
 
   return (
     <div className="min-h-screen bg-[#e9e9f6]">
       <div className="max-w-7xl mx-auto px-4 py-8">
+        <TooltipProvider>
         <Header />
+        </TooltipProvider>
         
         {/* New Entry Button */}
         <button
@@ -132,19 +167,26 @@ export default function ListEntries() {
         </div> */}
 
         {/* My Entries */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {entries.map((entry) => (
-            <EntryCard
-              key={entry.id}
-              title={entry.title}
-              id={entry.id}
-              date={entry.date}
-              isEmpty={entry.isEmpty}
-              onClick={() => openEditDialog(entry)}
-              onDelete={handleDelete}
+        {/* <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+         */}
+
+        {
+          loader ? (
+          <div className='flex flex-col items-center mt-4 font-3xl'>
+             <Spinner />
+             </div>) : 
+             (
+         
+            <div>
+            <EntryList
+            entries= {entries}
+            handleDelete = {handleDelete}
+            onCardClick = {(entry:Entry) => openEditDialog(entry)}
             />
-          ))}
         </div>
+          )
+        }
+       
 
         {/* New Entry Dialog */}
         <NewEntryDialog
@@ -154,6 +196,7 @@ export default function ListEntries() {
             initialEntry={
                 selectedEntry ? {
                 id: selectedEntry.id,
+                title: selectedEntry.title,
                 content: selectedEntry.content,
                 createdAt: new Date(selectedEntry.date).toISOString(),
                 }: undefined

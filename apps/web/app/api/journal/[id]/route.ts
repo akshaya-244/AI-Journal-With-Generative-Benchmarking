@@ -9,15 +9,17 @@ export const dynamic = 'force-dynamic';
 
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  context: {params: Promise<{id: string}>}
+  // { params }: { params: { id: string } }
 ) {
   try {
+    const {id} = await context.params
     const session = await auth.api.getSession({ headers: req.headers });
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { content } = await req.json();
+    const { title, content } = await req.json();
     if (!content?.trim()) {
       return NextResponse.json(
         { error: "Content is required" },
@@ -26,14 +28,15 @@ export async function PATCH(
     }
 
     const entry = await prisma.journalEntry.update({
-      where: { id:params.id, userId: session.user.id },
-      data: { content: content.trim() },
+      where: { id:id, userId: session.user.id },
+      data: { title: title.trim(), content: content.trim() },
     });
 
     return NextResponse.json({
       success: true,
       entry: {
         id: entry.id,
+        title: entry.title,
         content: entry.content,
         createdAt: entry.createdAt,
         updatedAt: entry.updatedAt,
@@ -50,9 +53,11 @@ export async function PATCH(
 
 export async function DELETE(
     req: NextRequest,
-    { params }: { params: { id: string } }
+  context: {params: Promise<{id: string}>}
+    // { params }: { params: { id: string } }
   ) {
     try {
+      const {id} = await context.params
       const session = await auth.api.getSession({ headers: req.headers });
       if (!session?.user) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -61,14 +66,14 @@ export async function DELETE(
       try{
         const table = await getEmbeddingsTable()
         // const del = `id = ${params.id}`
-        await table.delete(`id = '${params.id}'`)
+        await table.delete(`id = '${id}'`)
       }
       catch (lancedbError){
         console.log("Lancedb deletion error  (non-fatal):", lancedbError);
       }
   
       const entry = await prisma.journalEntry.delete({
-        where: { id: params.id, userId: session.user.id },
+        where: { id: id, userId: session.user.id },
        
       });
 

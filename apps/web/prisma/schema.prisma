@@ -79,6 +79,7 @@ model Verification {
 
 model JournalEntry {
   id String @id @default(cuid())
+  title String @db.Text
   userId String
   content String @db.Text
   vectorId String? //id ref to vectorise
