@@ -28,12 +28,19 @@ export function NewEntryDialog({ isOpen, onClose, mode,
   const [imageUrl, setImageUrl] = useState('');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [currentDate, setCurrentDate] = useState('');
 
   useEffect(() => {
     if (!isOpen) return;
     setTitle(initialEntry?.title ?? "");
     setContent(initialEntry?.content ?? "");
     setErrorMessage(null);
+    const today = new Date();
+    setCurrentDate(today.toLocaleDateString('en-US', {
+      month: 'long',
+      day: 'numeric',
+      year: 'numeric'
+    }));
   }, [isOpen, initialEntry]);
 
   if (!isOpen) return null;
@@ -84,14 +91,14 @@ export function NewEntryDialog({ isOpen, onClose, mode,
 
 
 
-  const getCurrentDate = () => {
-    const today = new Date();
-    return today.toLocaleDateString('en-US', { 
-      month: 'long', 
-      day: 'numeric',
-      year: 'numeric'
-    });
-  };
+  // const getCurrentDate = () => {
+  //   const today = new Date();
+  //   return today.toLocaleDateString('en-US', { 
+  //     month: 'long', 
+  //     day: 'numeric',
+  //     year: 'numeric'
+  //   });
+  // };
 
   return (
     <div className="fixed inset-0 bg-[#e9e9f6] z-50">
@@ -106,7 +113,7 @@ export function NewEntryDialog({ isOpen, onClose, mode,
           </button>
           
           <div className="text-gray-500 text-sm">
-            {getCurrentDate()}
+            {currentDate}
           </div>
           
           <div className="flex items-center gap-2">
