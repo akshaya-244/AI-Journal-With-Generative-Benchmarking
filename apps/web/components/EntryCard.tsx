@@ -116,7 +116,7 @@ interface EntryCardProps {
 export function EntryCard({ entry, onCardClick, onExpandClick }: EntryCardProps) {
   
   const { id, title,content, date } = entry;
-  console.log(title)
+  // console.log(title)
   return (
     // This is the main animated container
     <motion.div

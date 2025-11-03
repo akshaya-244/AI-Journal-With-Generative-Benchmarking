@@ -43,7 +43,7 @@ export async function  POST(req:NextRequest) {
         .limit(3)
         .toArray();
 
-        console.log(results)
+        // console.log(results)
 
         const formattedResults = results.map((result: any) =>({
             id: result.id,
